@@ -37,7 +37,6 @@ export default function RootLayout({
         <ThemeProvider>
           <Navbar />
           <div className="flex flex-1 overflow-hidden">
-            {/* Fixed Sidebar shown on md+ screens */}
             <div className="hidden md:block flex-shrink-0">
               <Sidebar />
             </div>

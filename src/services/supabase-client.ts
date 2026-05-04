@@ -12,7 +12,7 @@ export async function uploadImageToStorage(
   const ext = file.name.split('.').pop() ?? 'jpg';
   const path = `projects/${projectId}/image.${ext}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('drone-images')
     .upload(path, file, { upsert: true });
 
@@ -34,6 +34,14 @@ export async function signUpWithEmail(email: string, password: string, name: str
     email,
     password,
     options: { data: { name } },
+  });
+}
+
+export async function signInWithGoogle() {
+  const redirectTo = `${window.location.origin}/auth/callback`;
+  return supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo },
   });
 }
 

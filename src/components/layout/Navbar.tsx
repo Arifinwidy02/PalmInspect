@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useAuthStore, useProjectStore, useThemeStore } from '@/store';
 
@@ -48,12 +49,17 @@ function ThemeToggle() {
 export function Navbar() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
+  const initialize = useAuthStore((s) => s.initialize);
   const openAuthModal = useAuthStore((s) => s.openAuthModal);
   const logout = useAuthStore((s) => s.logout);
   const currentProject = useProjectStore((s) => {
     const cp = s.projects.find((p) => p.id === s.currentProjectId);
     return cp ?? null;
   });
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   return (
     <nav className="h-14 border-b border-border bg-navbar backdrop-blur-md flex items-center justify-between px-4 z-40">
@@ -93,7 +99,7 @@ export function Navbar() {
                 {user.credits} credits
               </span>
               <span className="text-border">|</span>
-              <span className="text-muted-foreground">{user.email}</span>
+              <span className="text-muted-foreground">{user.name ?? user.email}</span>
             </div>
             <button
               onClick={logout}

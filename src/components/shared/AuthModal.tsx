@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuthStore, useProjectStore } from '@/store';
+import { signInWithEmail, signUpWithEmail, signInWithGoogle } from '@/services';
 import { Modal } from './Modal';
 import { Input } from './Input';
 import { Button } from './Button';
@@ -21,34 +22,71 @@ export function AuthModal() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const { error: signInError } = await signInWithGoogle();
+      if (signInError) {
+        setError(signInError.message);
+        setIsLoading(false);
+      }
+    } catch {
+      setError('Failed to sign in with Google');
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    await new Promise((r) => setTimeout(r, 1000));
-
-    const mockUser = {
-      id: `user_${Date.now()}`,
-      email,
-      name: authModalMode === 'signup' ? name : email.split('@')[0],
-      avatarUrl: null,
-      credits: 10,
-      createdAt: new Date().toISOString(),
-    };
-
-    login(mockUser);
-    syncGuestProjectsToUser(mockUser.id);
-    setIsLoading(false);
+    if (authModalMode === 'signup') {
+      const { data, error: signUpError } = await signUpWithEmail(email, password, name);
+      if (signUpError) {
+        setError(signUpError.message);
+        setIsLoading(false);
+        return;
+      }
+      if (data.user) {
+        const profile = {
+          id: data.user.id,
+          email: data.user.email ?? email,
+          name: data.user.user_metadata?.name ?? name,
+          avatarUrl: null,
+          credits: 10,
+          createdAt: data.user.created_at,
+        };
+        login(profile);
+        syncGuestProjectsToUser(profile.id);
+        setIsLoading(false);
+      }
+    } else {
+      const { data, error: signInError } = await signInWithEmail(email, password);
+      if (signInError) {
+        setError(signInError.message);
+        setIsLoading(false);
+        return;
+      }
+      if (data.user) {
+        const profile = {
+          id: data.user.id,
+          email: data.user.email ?? email,
+          name: data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? null,
+          avatarUrl: null,
+          credits: 10,
+          createdAt: data.user.created_at,
+        };
+        login(profile);
+        syncGuestProjectsToUser(profile.id);
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
-    <Modal
-      isOpen={authModalOpen}
-      onClose={closeAuthModal}
-      title=""
-      size="sm"
-    >
+    <Modal isOpen={authModalOpen} onClose={closeAuthModal} title="" size="sm">
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground">
           {authModalMode === 'login' ? 'Welcome back' : 'Create your account'}
@@ -62,9 +100,13 @@ export function AuthModal() {
         </p>
       </div>
 
-      {/* Social Login Buttons */}
       <div className="space-y-2 mb-4">
-        <button className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-border bg-accent text-foreground hover:bg-muted transition-colors text-sm">
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-border bg-accent text-foreground hover:bg-muted transition-colors text-sm disabled:opacity-50"
+        >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

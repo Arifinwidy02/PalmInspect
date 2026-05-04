@@ -1,3 +1,4 @@
+import { getURL } from '@/utils/helpers';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
@@ -38,7 +39,7 @@ export async function signUpWithEmail(email: string, password: string, name: str
 }
 
 export async function signInWithGoogle() {
-  const redirectTo = `${window.location.origin}/auth/callback`;
+  const redirectTo = `${getURL()}/auth/callback`;
   return supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo },

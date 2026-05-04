@@ -72,3 +72,15 @@ export function formatDate(dateStr: string): string {
     minute: '2-digit',
   });
 }
+
+export const getURL = () => {
+let url = process.env.NEXT_PUBLIC_VERCEL_URL 
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
+  : 'http://localhost:3000';
+  
+  // Pastikan menyertakan http/https
+  url = url.includes('http') ? url : `https://${url}`;
+  // Pastikan diakhiri dengan /
+  url = url.charAt(url.length - 1) === '/' ? url : `${url}/`;
+  return url;
+};

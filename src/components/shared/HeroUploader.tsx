@@ -33,7 +33,56 @@ export function HeroUploader({ onUpload, hasImage }: HeroUploaderProps) {
     [onUpload]
   );
 
-  if (hasImage) return null;
+  if (hasImage) {
+    return (
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".jpg,.jpeg,.png,.tif,.tiff"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          title="Upload new image"
+          className={`
+            absolute top-4 right-4 z-30
+            flex items-center gap-2
+            px-3 py-2 rounded-xl
+            border transition-all duration-200 backdrop-blur-md group
+            ${isDragging
+              ? 'border-emerald-400 bg-emerald-500/20 scale-105'
+              : 'border-border/50 bg-card/80 hover:bg-card hover:border-emerald-500/50'
+            }
+          `}
+        >
+          <svg
+            className="w-4 h-4 text-emerald-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+            New image
+          </span>
+        </button>
+      </>
+    );
+  }
 
   return (
     <div
